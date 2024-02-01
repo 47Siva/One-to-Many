@@ -1,5 +1,6 @@
 package com.Relationships.EmployeeOneToMany.entity;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.UUID;
 
@@ -23,13 +24,18 @@ import lombok.ToString;
 @AllArgsConstructor
 @NoArgsConstructor
 @ToString
-public class Employee {
+public class Employee implements Serializable {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 
 	@Id
 	@GeneratedValue(generator = "UUID")
 	@GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
 	@Type(type = "uuid-char")
-	private UUID employee_id;
+	private UUID id;
 	
 	private String name;
 	
@@ -40,7 +46,7 @@ public class Employee {
 	private double salary;
 	
 	@OneToMany(targetEntity = Address.class,cascade = {CascadeType.ALL})
-	@JoinColumn(name = "emoloyee_id",referencedColumnName = "employee_id")
+	@JoinColumn(name = "employee_id",referencedColumnName = "id")
 	private List<Address> address;
 	
 }

@@ -1,24 +1,27 @@
 package com.Relationships.EmployeeOneToMany.dto;
 
+import java.util.UUID;
 
-
-public interface EmployeeAddressDto {
+public interface EmployeeAddressList {
 	
-	public String getEmployeeName();
+	public UUID getEmpId();
 	
-	public String getEmployeeJob();
+	public String getEmpName();
 	
-	public Long getEmployeeNumber();
+	public String getEmpJob();
 	
-	public Double getEmployeeSalary();
+	public Long getEmpNumber();
 	
-	public String getAddressState();
+	public Double getEmpSalary();
 	
-	public String getAdressDistrict();
+	public UUID getEmpAddId();
 	
-	public String getAddressPlace();
+	public String getEmpDistrict();
 	
-	public Double getAddressPlatNo();
+	public String getEmpPlace();
 	
+	public String getEmpState();
+	
+	public Double getEmpPlatNo();
 	
 }

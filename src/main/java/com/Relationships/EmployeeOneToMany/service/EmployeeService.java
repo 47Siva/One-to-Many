@@ -1,20 +1,34 @@
 package com.Relationships.EmployeeOneToMany.service;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ResourceUtils;
 
 import com.Relationships.EmployeeOneToMany.dto.AddressDto;
 import com.Relationships.EmployeeOneToMany.dto.EmployeeAddressDto;
+import com.Relationships.EmployeeOneToMany.dto.EmployeeAddressList;
 import com.Relationships.EmployeeOneToMany.dto.EmployeeDto;
 import com.Relationships.EmployeeOneToMany.entity.Address;
 import com.Relationships.EmployeeOneToMany.entity.Employee;
 import com.Relationships.EmployeeOneToMany.repository.AddressRepository;
 import com.Relationships.EmployeeOneToMany.repository.EmployeeRepository;
+
+import net.sf.jasperreports.engine.JRException;
+import net.sf.jasperreports.engine.JasperCompileManager;
+import net.sf.jasperreports.engine.JasperExportManager;
+import net.sf.jasperreports.engine.JasperFillManager;
+import net.sf.jasperreports.engine.JasperPrint;
+import net.sf.jasperreports.engine.JasperReport;
+import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
 
 @Service
 public class EmployeeService {
@@ -28,13 +42,13 @@ public class EmployeeService {
 	// post
 	public Employee post(EmployeeDto employeeDto) {
 		Employee employee = new Employee();
-		if (employee.getEmployee_id() != null) {
-			Optional<Employee> employee1 = employeeRepository.findById(employeeDto.getEmployee_id());
+		if (employee.getId() != null) {
+			Optional<Employee> employee1 = employeeRepository.findById(employeeDto.getId());
 			employee = employee1.get();
 		} else {
 			employee = new Employee();
 		}
-		employee.setEmployee_id(employeeDto.getEmployee_id());
+		employee.setId(employeeDto.getId());
 		employee.setJob(employeeDto.getJob());
 		employee.setName(employeeDto.getName());
 		employee.setNumber(employeeDto.getNumber());
@@ -66,14 +80,14 @@ public class EmployeeService {
 		
 		for (EmployeeDto i : employeeDto) {
 			Employee employeeObj = new Employee();
-			if(employeeObj.getEmployee_id() != null) {
-				Optional<Employee> employeeList1 = employeeRepository.findById(employeeObj.getEmployee_id());
+			if(employeeObj.getId() != null) {
+				Optional<Employee> employeeList1 = employeeRepository.findById(employeeObj.getId());
 				employeeObj = employeeList1.get(); 
 			}
 			else {
 				employeeObj = new Employee();
 			}
-			employeeObj.setEmployee_id(i.getEmployee_id());
+			employeeObj.setId(i.getId());
 			employeeObj.setJob(i.getJob());
 			employeeObj.setName(i.getName());
 			employeeObj.setNumber(i.getNumber());
@@ -108,7 +122,7 @@ public class EmployeeService {
 		Optional<Employee> employee1 = employeeRepository.findById(employee_id);
 		employee = employee1.get();
 		EmployeeDto employeeDto = new EmployeeDto();
-		employeeDto.setEmployee_id(employee.getEmployee_id());
+		employeeDto.setId(employee.getId());
 		employeeDto.setJob(employee.getJob());
 		employeeDto.setName(employee.getName());
 		employeeDto.setNumber(employee.getNumber());
@@ -135,7 +149,7 @@ public class EmployeeService {
 		List<EmployeeDto> employeeDtoList = new ArrayList<EmployeeDto>();
 		for (Employee i : employeeRepository.findAll()) {
 			EmployeeDto employeeDto = new EmployeeDto();
-			employeeDto.setEmployee_id(i.getEmployee_id());
+			employeeDto.setId(i.getId());
 			employeeDto.setJob(i.getJob());
 			employeeDto.setName(i.getName());
 			employeeDto.setNumber(i.getNumber());
@@ -155,14 +169,14 @@ public class EmployeeService {
 		return employeeDtoList;
 	}
 
-	public void delete(UUID employee_id) {
+	public void delete(UUID id) {
 		// TODO Auto-generated method stub
 
-		employeeRepository.deleteById(employee_id);
+		employeeRepository.deleteById(id);
 
 	}
 
-	public List<EmployeeAddressDto> getByName(String name) {
+	public List<EmployeeAddressList> getByName(String name) {
 
 		if(name == null) {			
 			return employeeRepository.findAllEmployee();
@@ -171,5 +185,111 @@ public class EmployeeService {
 		}
 		
 	}
+
+	public List<Object> getByAny(Object searchKey) {
+		return employeeRepository.findByAny(searchKey);
+	}
+
+	public List<Object> getlist(Object searchkey) {
+		return employeeRepository.findBykey(searchkey);
+	}
+
+	//post man with filter
+	public byte[] getBykey(Object key) throws FileNotFoundException, JRException {
+		List<EmployeeAddressList> employee = employeeRepository.findByValue(key);
+		String filepath = "C:\\Users\\VC\\Documents\\workspace-spring-tool-suite-4-4.20.0.RELEASE\\EmployeeOneToMany\\src\\main\\resources\\Report\\Report.jrxml";
+		
+		//load and compile it
+		File file = ResourceUtils.getFile(filepath);
+		JasperReport jasperReport = JasperCompileManager.compileReport(file.getAbsolutePath());
+		
+		// maping jasper report and db
+		JRBeanCollectionDataSource dataSource = new JRBeanCollectionDataSource(employee);
+		
+		Map<String,Object> map = new HashMap<>();
+		map.put("createdBy", "Employee");
+		
+		JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, map,dataSource);
+		
+		return JasperExportManager.exportReportToPdf(jasperPrint);
+	}
+	
+	// chrome	
+
+	public String getallEmp(String report) throws FileNotFoundException, JRException {
+		
+		List<Employee> employee = employeeRepository.findAll();
+		String filepath = "C:\\Users\\VC\\Documents\\workspace-spring-tool-suite-4-4.20.0.RELEASE\\EmployeeOneToMany\\src\\main\\resources\\Report\\Report.jrxml";
+		String Path = "C:\\Users\\VC\\Desktop\\newReport";
+		
+		//load and compile it
+		File file = ResourceUtils.getFile(filepath);
+		JasperReport jasperReport = JasperCompileManager.compileReport(file.getAbsolutePath());
+		
+		JRBeanCollectionDataSource dataSource = new JRBeanCollectionDataSource(employee);
+		
+		Map<String, Object> map = new HashMap<>();
+		map.put("createdBy", "Employee");
+		
+		JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport,map,dataSource);
+		
+		if (report.equalsIgnoreCase("html")) {
+			JasperExportManager.exportReportToHtmlFile(jasperPrint, Path+"employee.html");
+		}
+		
+		if (report.equalsIgnoreCase("pdf")) {
+			JasperExportManager.exportReportToPdfFile(jasperPrint,Path+"employee.pdf");
+			
+		}
+		
+		return "report generatedin in path : " + Path;
+		
+	}
+
+	public List<Employee> getAll1() {
+		
+		return employeeRepository.findAll();
+	}
+
+	//post man
+	public byte[] getAll2() throws FileNotFoundException, JRException {
+//		List<Employee> employee = employeeRepository.findAll();
+		
+		List<EmployeeAddressDto> employeeAddressDtoList = new ArrayList<EmployeeAddressDto>();
+		
+		for (Employee i : employeeRepository.findAll()) {
+			EmployeeAddressDto employeeAddressDto = new EmployeeAddressDto();
+			employeeAddressDto.setId(i.getId());
+			employeeAddressDto.setName(i.getName());
+			employeeAddressDto.setJob(i.getJob());
+			employeeAddressDto.setNumber(i.getNumber());
+			employeeAddressDto.setSalary(i.getSalary());
+			for(Address a : i.getAddress()) {
+				employeeAddressDto.setAddress_id(a.getAddress_id());
+				employeeAddressDto.setState(a.getState());
+				employeeAddressDto.setDistrict(a.getDistrict());
+				employeeAddressDto.setPlace(a.getPlace());
+				employeeAddressDto.setPlatNo(a.getPlatNo());
+			}
+			employeeAddressDtoList.add(employeeAddressDto);
+		}
+		
+		String filepath = "C:\\Users\\VC\\Documents\\workspace-spring-tool-suite-4-4.20.0.RELEASE\\EmployeeOneToMany\\src\\main\\resources\\Report\\Report.jrxml";
+		
+		File file = ResourceUtils.getFile(filepath);
+		JasperReport jasperReport = JasperCompileManager.compileReport(file.getAbsolutePath());
+		
+		JRBeanCollectionDataSource dataSource = new JRBeanCollectionDataSource(employeeAddressDtoList);
+		
+		Map<String, Object> map = new HashMap<>();
+		map.put("createdBy", "Employee");
+		
+		JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport,map,dataSource);
+		
+		
+		return JasperExportManager.exportReportToPdf(jasperPrint);
+	}
+
+	
 
 }
